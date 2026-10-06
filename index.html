@@ -55,24 +55,34 @@
     document.querySelectorAll('[data-project]').forEach(function(link){link.addEventListener('click',function(){var select=document.getElementById('interest');if(select){var value=link.dataset.project;Array.from(select.options).forEach(function(option){if(option.textContent.indexOf(value)>-1)select.value=option.value})}})});
     document.getElementById('lead-form').addEventListener('submit',function(event){event.preventDefault();var form=new FormData(event.currentTarget);var name=form.get('name'),phone=form.get('phone'),interest=form.get('interest'),message=form.get('message');localStorage.setItem('huetay-lead',JSON.stringify({name:name,phone:phone,interest:interest,message:message,createdAt:new Date().toISOString()}));document.getElementById('form-note').textContent='Đang mở Zalo để bạn gửi thông tin trực tiếp…';window.open('https://zalo.me/0825684139','_blank','noopener');});
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script>
     (async function loadCmsContent(){
-      const esc=(value)=>String(value??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
+      const esc=(value)=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
       try{
-        const response=await fetch('/api/site');
-        if(!response.ok)return;
-        const data=await response.json();
+        const client=window.htSupabase;
+        const [projectsResult,unitsResult,articlesResult]=await Promise.all([
+          client.from('projects').select('*').order('featured',{ascending:false}).order('created_at',{ascending:false}),
+          client.from('units').select('*').order('created_at',{ascending:false}),
+          client.from('articles').select('*').eq('status','published').order('published_at',{ascending:false})
+        ]);
+        if(projectsResult.error||unitsResult.error||articlesResult.error) throw(projectsResult.error||unitsResult.error||articlesResult.error);
+        const unitsByProject=new Map();
+        unitsResult.data.forEach(unit=>{if(!unitsByProject.has(unit.project_id))unitsByProject.set(unit.project_id,[]);unitsByProject.get(unit.project_id).push(unit)});
+        const projects=projectsResult.data.map(project=>({...project,units:unitsByProject.get(project.id)||[]}));
         const grid=document.querySelector('.project-grid');
-        if(grid&&Array.isArray(data.projects)&&data.projects.length){
-          grid.innerHTML=data.projects.map((project,index)=>`<article class="project-card${index===0?' featured':''}"><div class="project-image"><img src="${esc(project.cover||'avata.jpg')}" alt="${esc(project.name)}" loading="lazy"></div><div class="project-body"><div class="project-tag">${esc(project.status||'Đang cập nhật')}</div><h3>${esc(project.name)}</h3><div class="project-location">${esc(project.location)}</div><p class="project-text">${esc(project.summary||project.description||'Thông tin dự án đang được cập nhật.')}</p><a class="project-link" href="#lien-he" data-project="${esc(project.name)}">Nhận thông tin dự án <span>↗</span></a></div></article>`).join('');
+        if(grid&&projects.length){
+          grid.innerHTML=projects.map((project,index)=>`<article class="project-card${index===0?' featured':''}"><div class="project-image"><img src="${esc(project.cover||'avata.jpg')}" alt="${esc(project.name)}" loading="lazy"></div><div class="project-body"><div class="project-tag">${esc(project.status||'Đang cập nhật')}</div><h3>${esc(project.name)}</h3><div class="project-location">${esc(project.location)}</div><p class="project-text">${esc(project.summary||project.description||'Thông tin dự án đang được cập nhật.')}</p><a class="project-link" href="#lien-he" data-project="${esc(project.name)}">Nhận thông tin dự án <span>↗</span></a></div></article>`).join('');
+          grid.querySelectorAll('[data-project]').forEach(link=>link.addEventListener('click',()=>{const select=document.getElementById('interest');Array.from(select.options).forEach(option=>{if(option.textContent.indexOf(link.dataset.project)>-1)select.value=option.value})}));
         }
-        const articles=Array.isArray(data.articles)?data.articles.filter(article=>article.status==='published'):[];
+        const articles=articlesResult.data||[];
         if(articles.length&&!document.getElementById('bai-viet')){
           const section=document.createElement('section');section.className='section articles';section.id='bai-viet';
-          section.innerHTML=`<div class="container"><div class="section-head"><div><div class="eyebrow">Góc nhìn Huệ Tây</div><h2>Thông tin để chọn<br>tự tin hơn.</h2></div><p class="section-intro">Những bài viết ngắn, thực tế và dễ áp dụng trước khi bạn đi sâu vào một dự án.</p></div><div class="article-grid">${articles.slice(0,3).map(article=>`<article class="article-card"><div class="article-meta">${esc(article.category)} · ${esc(article.publishedAt)}</div><h3>${esc(article.title)}</h3><p>${esc(article.excerpt)}</p><a class="project-link" href="#lien-he">Trao đổi chủ đề này <span>↗</span></a></article>`).join('')}</div></div>`;
+          section.innerHTML=`<div class="container"><div class="section-head"><div><div class="eyebrow">Góc nhìn Huệ Tây</div><h2>Thông tin để chọn<br>tự tin hơn.</h2></div><p class="section-intro">Những bài viết ngắn, thực tế và dễ áp dụng trước khi bạn đi sâu vào một dự án.</p></div><div class="article-grid">${articles.slice(0,3).map(article=>`<article class="article-card"><div class="article-meta">${esc(article.category)} · ${esc(article.published_at)}</div><h3>${esc(article.title)}</h3><p>${esc(article.excerpt)}</p><a class="project-link" href="#lien-he">Trao đổi chủ đề này <span>↗</span></a></article>`).join('')}</div></div>`;
           document.querySelector('.contact').before(section);
         }
-      }catch(error){console.warn('CMS content unavailable; using static content.',error)}
+      }catch(error){console.warn('Supabase content unavailable; using static content.',error)}
     })();
   </script>
 

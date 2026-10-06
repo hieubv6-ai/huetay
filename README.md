@@ -41,12 +41,16 @@ Firebase Firestore → PostgreSQL → JSON offline fallback
 
 Không commit service account JSON, private key hoặc `.env`.
 
-## Deploy thật
+## Deploy GitHub Pages + Supabase
 
-- Render: dùng `render.yaml`, build `npm ci`, start `npm start`, thêm `ADMIN_PASSWORD` và `FIREBASE_SERVICE_ACCOUNT_JSON` trong Environment.
-- VPS: dùng PM2 + Nginx + Certbot; xem [docs/deploy.md](docs/deploy.md).
-- Không dùng GitHub Pages cho CMS Node.js vì GitHub Pages chỉ phục vụ file tĩnh.
-- Sau deploy kiểm tra `/api/site`, `/admin.html`, đăng nhập admin và backup Firestore.
+- GitHub Pages chạy giao diện tĩnh; Supabase chạy database, Auth và RLS.
+- Chạy `db/supabase.sql`, sau đó `db/supabase-seed.sql` trong Supabase SQL Editor.
+- Tạo tài khoản quản trị trong Supabase Authentication → Users.
+- Vào GitHub → Settings → Pages, chọn **GitHub Actions** làm Source.
+- Workflow `.github/workflows/pages.yml` sẽ tự deploy sau mỗi lần push lên `main`.
+- Hướng dẫn đầy đủ: [docs/github-pages-supabase.md](docs/github-pages-supabase.md).
+
+`server.js` vẫn được giữ để chạy local/offline, nhưng không được GitHub Pages sử dụng.
 
 ## Nội dung
 
