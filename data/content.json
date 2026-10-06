@@ -1,0 +1,14 @@
+{
+  "projects": [
+    {"id":"ocean-park-2-3","name":"Vinhomes Ocean Park 2 & 3","slug":"vinhomes-ocean-park-2-3","location":"Văn Giang, Hưng Yên","status":"Đang tư vấn","cover":"vinhomes-ocean-park-1-2-3.jpg","summary":"Đô thị biển phía Đông Hà Nội dành cho nhu cầu ở thực và đầu tư dài hạn.","description":"Tổng hợp thông tin sản phẩm, chính sách và lựa chọn phù hợp tại Ocean Park 2 & 3.","featured":true,"units":[{"id":"op23-can-lien-ke-01","code":"OP23-LK-01","type":"Liền kề","area":"90 m²","price":"Liên hệ","status":"Đang bán"}]},
+    {"id":"ha-long-xanh","name":"Vinhomes Hạ Long Xanh – Global Gate","slug":"ha-long-xanh","location":"Tuần Châu & Quảng Yên, Quảng Ninh","status":"Nhận đăng ký quan tâm","cover":"ha_long_xanh.jpg","summary":"Tổ hợp ven biển kết nối du lịch, đô thị và hạ tầng vùng Đông Bắc.","description":"Cập nhật giỏ hàng, vị trí và thông tin mở bán theo từng giai đoạn.","featured":true,"units":[]},
+    {"id":"hai-van-bay","name":"Vinhomes Hải Vân Bay","slug":"hai-van-bay","location":"Làng Vân, Đà Nẵng","status":"Đang cập nhật","cover":"hai_van_bay.jpg","summary":"Góc nhìn về sản phẩm nghỉ dưỡng và tiềm năng phát triển phía Bắc Đà Nẵng.","description":"Đăng tải thông tin dự án, chính sách và căn phù hợp nhu cầu nghỉ dưỡng.","featured":false,"units":[]},
+    {"id":"can-gio","name":"Vinhomes Green Paradise – Cần Giờ","slug":"can-gio-green-paradise","location":"Cần Giờ, TP. Hồ Chí Minh","status":"Đang cập nhật","cover":"vin_cangio.jpg","summary":"Đô thị biển và câu chuyện hạ tầng kết nối phía Nam.","description":"Theo dõi thông tin quy hoạch, tiến độ và sản phẩm theo từng đợt.","featured":false,"units":[]},
+    {"id":"sai-gon-park","name":"Vinhomes Sài Gòn Park","slug":"sai-gon-park","location":"Hóc Môn, TP. Hồ Chí Minh","status":"Nhận nhu cầu","cover":"sai_gon_park.jpg","summary":"Cập nhật thông tin quy hoạch, tiến độ và sản phẩm phía Tây Bắc thành phố.","description":"Tư vấn lựa chọn sản phẩm dựa trên mục tiêu ở thực và đầu tư.","featured":false,"units":[]}
+  ],
+  "articles": [
+    {"id":"article-1","title":"5 câu hỏi nên trả lời trước khi chọn một dự án Vinhomes","slug":"5-cau-hoi-truoc-khi-chon-du-an-vinhomes","category":"Góc nhìn đầu tư","excerpt":"Đừng bắt đầu bằng câu hỏi giá bao nhiêu. Hãy bắt đầu bằng việc sản phẩm có phù hợp với mục tiêu và thời gian của bạn hay không.","publishedAt":"2026-10-06","status":"published"},
+    {"id":"article-2","title":"Mua để ở và mua để đầu tư: cách lọc sản phẩm khác nhau thế nào?","slug":"mua-de-o-va-mua-de-dau-tu","category":"Kinh nghiệm","excerpt":"Cùng một dự án nhưng tiêu chí chọn căn, vị trí và dòng tiền có thể hoàn toàn khác nhau.","publishedAt":"2026-10-05","status":"published"}
+  ],
+  "settings": {"brand":"Huệ Tây Vinhomes","hotline":"0825684139","zalo":"https://zalo.me/0825684139","facebook":"https://www.facebook.com/haihau.le.7"}
+}
