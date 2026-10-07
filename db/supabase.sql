@@ -80,6 +80,7 @@ create table if not exists site_settings (key text primary key, value jsonb not 
 create index if not exists units_project_id_idx on units(project_id);
 create index if not exists articles_status_date_idx on articles(status, published_at desc);
 insert into site_settings(key,value) values ('public','{"brand":"Huệ Tây Vinhomes","hotline":"0825684139","zalo":"https://zalo.me/0825684139","facebook":"https://www.facebook.com/haihau.le.7"}') on conflict (key) do nothing;
+insert into site_settings(key,value) values ('profile','{"name":"Huệ Tây","title":"Cố vấn bất động sản","bio":"Đã hỗ trợ tư vấn và đồng hành cùng nhiều nhà đầu tư trên thị trường.","experience":"10 năm kinh nghiệm tư vấn bất động sản","certifications":"","achievements":"","phone":"0825 684 139","zalo":"https://zalo.me/0825684139"}') on conflict (key) do nothing;
 
 alter table projects enable row level security; alter table units enable row level security; alter table articles enable row level security; alter table site_settings enable row level security; alter table leads enable row level security;
 drop policy if exists "public can read projects" on projects; create policy "public can read projects" on projects for select using (true);
