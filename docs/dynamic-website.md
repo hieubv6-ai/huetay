@@ -1,37 +1,10 @@
-# Website động nhiều trang
 
-Website hiện dùng GitHub Pages cho frontend và Supabase cho dữ liệu.
+## AI Writer Studio và chuẩn nội dung chuyên gia
 
-## Các trang
+CMS có thêm tab **✍️ AI Writer Studio**. Người biên tập chọn mẫu hoặc nhập bốn nhóm dữ liệu bắt buộc: thông tin cơ bản, điểm mạnh thực tế, hạn chế khảo sát và chân dung khách hàng. Có thể bổ sung dữ liệu di chuyển theo km/phút, pháp lý, đối thủ, giá thuê, vốn tự có, khoản vay và thu nhập hộ gia đình.
 
-- `/` — Trang chủ
-- `/du-an/` — Danh mục tất cả dự án trong bảng `projects`
-- `/du-an/{slug}/` — Trang chi tiết dự án
-- `/bai-viet/` — Danh mục bài viết trong bảng `articles`
-- `/bai-viet/{slug}/` — Trang chi tiết bài viết
-- `/admin.html` — CMS đăng nhập bằng Supabase Auth
+Nút **Xem Chuẩn Lệnh AI** hiển thị directive thống nhất: vai trò chuyên gia Hiếu Bùi BĐS với 10 năm kinh nghiệm, loại bỏ ngôn ngữ quảng cáo sáo rỗng, không tự bịa số liệu và phải ghi rõ khi dữ liệu chưa xác minh. Nút **Viết Bài Chuẩn Chuyên Gia 10 Năm** tạo bản xem trước theo 8 phần: sapo, vị trí/hạ tầng, so sánh đối thủ, ưu điểm thực địa, hạn chế, chân dung khách hàng, tài chính, kết luận/CTA.
 
-GitHub Pages không có server-side routing, vì vậy `404.html` chứa cùng app shell để URL con vẫn tải được khi người dùng refresh.
+Bản xem trước dùng Markdown gồm H2, H3, bullet và `**chữ đậm**`. Khi xuất bản, nội dung được lưu trong `articles.content` và frontend hiển thị đúng cấu trúc SEO. Giá tiền, diện tích, phần trăm, số km/phút và thông tin pháp lý cần được nhập trong dữ liệu nguồn để hệ thống in đậm khi viết.
 
-## Dữ liệu động
-
-Frontend đọc `projects` và `articles` từ Supabase. Bộ nội dung trong `site-content.js` chỉ là fallback an toàn khi database chưa có dữ liệu hoặc Supabase tạm thời không truy cập được.
-
-Để lưu toàn bộ nội dung chi tiết của dự án, chạy `db/supabase.sql` trong Supabase SQL Editor. Các trường nội dung gồm:
-
-- `hook`
-- `context`
-- `differences` — JSON array
-- `fit_for`
-- `considerations`
-- `cta`
-- `sources` — JSON array
-- `updated_note`
-
-Sau đó đăng nhập `/admin.html` để sửa dự án và bài viết. Mọi thay đổi lưu trong Supabase sẽ hiển thị trên frontend ở lần tải kế tiếp, không cần sửa code.
-
-## Lưu ý
-
-- `SUPABASE_ANON_KEY`/publishable key được phép xuất hiện ở frontend; không đưa service-role key vào GitHub.
-- Giá, chính sách, pháp lý, tiến độ và điều kiện giao dịch phải cập nhật riêng theo từng sản phẩm.
-- Khi thêm dự án mới trong CMS, cần chọn ảnh đã có trong repository hoặc bổ sung ảnh vào repository.
+CMS cũng bổ sung cho `projects` các trường `developer`, `scale`, `price`, `travel`, `strengths`, `limitations`, `buyer_profile`, `not_for` và `finance`. Hãy chạy lại file `db/supabase.sql` sau khi cập nhật schema, rồi nhập dữ liệu xác minh cho từng dự án. Không dùng nội dung mẫu làm bằng chứng pháp lý hoặc cam kết giá.

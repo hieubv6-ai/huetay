@@ -7,6 +7,15 @@ create table if not exists projects (
   name text not null,
   slug text not null unique,
   location text not null default '',
+  developer text not null default '',
+  scale text not null default '',
+  price text not null default '',
+  travel jsonb not null default '[]'::jsonb,
+  strengths jsonb not null default '[]'::jsonb,
+  limitations jsonb not null default '[]'::jsonb,
+  buyer_profile text not null default '',
+  not_for text not null default '',
+  finance text not null default '',
   status text not null default 'Đang cập nhật',
   cover text not null default '',
   summary text not null default '',
@@ -25,6 +34,15 @@ create table if not exists projects (
 );
 
 -- Nếu bảng projects đã tồn tại từ bản cũ, các dòng này bổ sung trường mới an toàn.
+alter table projects add column if not exists developer text not null default '';
+alter table projects add column if not exists scale text not null default '';
+alter table projects add column if not exists price text not null default '';
+alter table projects add column if not exists travel jsonb not null default '[]'::jsonb;
+alter table projects add column if not exists strengths jsonb not null default '[]'::jsonb;
+alter table projects add column if not exists limitations jsonb not null default '[]'::jsonb;
+alter table projects add column if not exists buyer_profile text not null default '';
+alter table projects add column if not exists not_for text not null default '';
+alter table projects add column if not exists finance text not null default '';
 alter table projects add column if not exists hook text not null default '';
 alter table projects add column if not exists context text not null default '';
 alter table projects add column if not exists differences jsonb not null default '[]'::jsonb;
