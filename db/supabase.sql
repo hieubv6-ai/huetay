@@ -64,16 +64,31 @@ create table if not exists articles (
   published_at date not null default current_date, status text not null default 'draft',
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
+create table if not exists leads (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default '',
+  phone text not null default '',
+  interest text not null default '',
+  message text not null default '',
+  page text not null default '',
+  status text not null default 'Mới',
+  created_at timestamptz not null default now()
+);
+create index if not exists leads_created_at_idx on leads(created_at desc);
+
 create table if not exists site_settings (key text primary key, value jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now());
 create index if not exists units_project_id_idx on units(project_id);
 create index if not exists articles_status_date_idx on articles(status, published_at desc);
 insert into site_settings(key,value) values ('public','{"brand":"Huệ Tây Vinhomes","hotline":"0825684139","zalo":"https://zalo.me/0825684139","facebook":"https://www.facebook.com/haihau.le.7"}') on conflict (key) do nothing;
 
-alter table projects enable row level security; alter table units enable row level security; alter table articles enable row level security; alter table site_settings enable row level security;
+alter table projects enable row level security; alter table units enable row level security; alter table articles enable row level security; alter table site_settings enable row level security; alter table leads enable row level security;
 drop policy if exists "public can read projects" on projects; create policy "public can read projects" on projects for select using (true);
 drop policy if exists "public can read units" on units; create policy "public can read units" on units for select using (true);
 drop policy if exists "public can read published articles" on articles; create policy "public can read published articles" on articles for select using (status = 'published' or auth.role() = 'authenticated');
 drop policy if exists "public can read settings" on site_settings; create policy "public can read settings" on site_settings for select using (true);
+drop policy if exists "public can create leads" on leads; create policy "public can create leads" on leads for insert to anon, authenticated with check (true);
+drop policy if exists "authenticated read leads" on leads; create policy "authenticated read leads" on leads for select to authenticated using (true);
+drop policy if exists "authenticated manage leads" on leads; create policy "authenticated manage leads" on leads for update, delete to authenticated using (true) with check (true);
 drop policy if exists "authenticated manage projects" on projects; create policy "authenticated manage projects" on projects for all to authenticated using (true) with check (true);
 drop policy if exists "authenticated manage units" on units; create policy "authenticated manage units" on units for all to authenticated using (true) with check (true);
 drop policy if exists "authenticated manage articles" on articles; create policy "authenticated manage articles" on articles for all to authenticated using (true) with check (true);
