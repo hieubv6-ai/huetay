@@ -1,4 +1,9 @@
 (() => {
+  // Supabase có thể dùng Site URL và đưa recovery token về trang chủ. Chuyển tiếp token sang form đổi mật khẩu.
+  if (location.pathname !== '/reset-password.html' && location.hash.includes('access_token=') && location.hash.includes('type=recovery')) {
+    location.replace('/reset-password.html' + location.hash);
+    return;
+  }
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const defaults = window.DEFAULT_PROJECTS || [];
   let projects = [...defaults];
