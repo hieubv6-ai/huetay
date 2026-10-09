@@ -53,3 +53,7 @@ alter table if exists public.units add column if not exists published boolean no
 -- Mỗi tin đăng có URL riêng.
 alter table if exists public.units add column if not exists slug text not null default '';
 create unique index if not exists units_slug_unique_idx on public.units(slug) where slug <> '';
+
+alter table if exists public.units add column if not exists price_total text not null default '';
+alter table if exists public.units add column if not exists price_per_sqm text not null default '';
+alter table if exists public.units add column if not exists rent_period text not null default 'tháng';
