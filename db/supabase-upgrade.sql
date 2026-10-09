@@ -49,3 +49,7 @@ alter table if exists public.units add column if not exists legal text not null 
 alter table if exists public.units add column if not exists description text not null default '';
 alter table if exists public.units add column if not exists cover text not null default '';
 alter table if exists public.units add column if not exists published boolean not null default true;
+
+-- Mỗi tin đăng có URL riêng.
+alter table if exists public.units add column if not exists slug text not null default '';
+create unique index if not exists units_slug_unique_idx on public.units(slug) where slug <> '';
