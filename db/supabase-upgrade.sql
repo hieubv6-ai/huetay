@@ -36,3 +36,16 @@ on conflict (key) do nothing;
 insert into public.site_settings(key, value)
 values ('crm_meta', '{}'::jsonb)
 on conflict (key) do nothing;
+
+-- Tin đăng gian hàng bán và cho thuê.
+alter table if exists public.units add column if not exists listing_type text not null default 'Bán';
+alter table if exists public.units add column if not exists title text not null default '';
+alter table if exists public.units add column if not exists address text not null default '';
+alter table if exists public.units add column if not exists bedrooms text not null default '';
+alter table if exists public.units add column if not exists bathrooms text not null default '';
+alter table if exists public.units add column if not exists direction text not null default '';
+alter table if exists public.units add column if not exists furnishing text not null default '';
+alter table if exists public.units add column if not exists legal text not null default '';
+alter table if exists public.units add column if not exists description text not null default '';
+alter table if exists public.units add column if not exists cover text not null default '';
+alter table if exists public.units add column if not exists published boolean not null default true;
