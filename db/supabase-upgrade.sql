@@ -57,3 +57,5 @@ create unique index if not exists units_slug_unique_idx on public.units(slug) wh
 alter table if exists public.units add column if not exists price_total text not null default '';
 alter table if exists public.units add column if not exists price_per_sqm text not null default '';
 alter table if exists public.units add column if not exists rent_period text not null default 'tháng';
+
+alter table if exists public.units add column if not exists gallery jsonb not null default '[]'::jsonb;
