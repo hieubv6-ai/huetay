@@ -31,7 +31,7 @@ async function saveSetting(key,value){check(await supabase.from('site_settings')
     if(current.error)throw current.error;
     if(!current.data.session)throw new Error('Phiên đăng nhập không còn hợp lệ. Hãy đăng nhập lại.');
     const refreshed=await supabase.auth.refreshSession();
-    if(refreshed.error)throw refreshed.error;
+    if(refreshed.error)console.warn('Session refresh warning:',refreshed.error.message);
     await Promise.race([load(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Supabase phản hồi quá lâu.')),15000))]);
     if(window.htLoadErrors?.length){banner.textContent='Đã đăng nhập nhưng có lỗi tải dữ liệu: '+window.htLoadErrors.join(' · ');banner.classList.add('show')}else{banner.textContent=`Đã tải: ${db.projects.length} dự án · ${db.articles.length} bài viết · ${db.units.length} căn`;banner.classList.add('show');setTimeout(()=>banner.classList.remove('show'),5000);}
   }catch(e){
