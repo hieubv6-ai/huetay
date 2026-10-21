@@ -4,18 +4,20 @@ async function uploadImage(file,folder){if(!file||!file.size)return'';const ext=
 function imageField(name,value,label='ẢNH HIỂN THỊ'){return`<div class="field full"><label>${label}<input name="${name}" value="${esc(value)}" placeholder="URL ảnh hoặc tên file hiện có"><input type="file" accept="image/jpeg,image/png,image/webp" data-upload-for="${name}"><small class="item-meta">Chọn ảnh để tải lên Supabase Storage bucket <b>media</b>; có thể dùng lại URL ảnh cũ.</small>${value?`<img class="admin-image-preview" src="${esc(value)}" alt="Ảnh xem trước">`:''}</label></div>`}function bindUploads(root){root.querySelectorAll('[data-upload-for]').forEach(input=>input.addEventListener('change',()=>{const field=root.querySelector(`[name="${input.dataset.uploadFor}"]`);if(field&&input.files[0])field.dataset.pendingFile='1'}))}
 async function load(){const [p,a,u,l,profile,menu,crm]=await Promise.all([supabase.from('projects').select('*').order('created_at',{ascending:false}),supabase.from('articles').select('*').order('published_at',{ascending:false}),supabase.from('units').select('*').order('created_at',{ascending:false}),supabase.from('leads').select('*').order('created_at',{ascending:false}),supabase.from('site_settings').select('value').eq('key','profile').maybeSingle(),supabase.from('site_settings').select('value').eq('key','menu').maybeSingle(),supabase.from('site_settings').select('value').eq('key','crm_meta').maybeSingle()]);[p,a,u,l,profile,menu,crm].forEach(check);db.projects=p.data||[];db.articles=a.data||[];db.units=u.data||[];db.leads=l.data||[];db.profile=profile.data?.value||{};db.menu=Array.isArray(menu.data?.value)&&menu.data.value.length?menu.data.value:MENU_FEATURES.slice(0,5);db.crm=crm.data?.value||{};renderDashboard();renderProjects();renderArticles();renderUnits();renderLeads();renderProfileSettings();renderMenu()}
 async function saveSetting(key,value){check(await supabase.from('site_settings').upsert({key,value,updated_at:new Date().toISOString()}))}async function showApp(){
-  const login=$('#login'),app=$('#app'),error=$('#login-error');
-  error.textContent='Đang tải dữ liệu quản trị…';
+  const login=$('#login'),app=$('#app'),error=$('#login-error'),banner=$('#notice');
+  login.hidden=true;app.hidden=false;error.textContent='';
+  banner.textContent='Đang tải dữ liệu quản trị…';banner.classList.add('show');
   try{
-    await Promise.race([load(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Supabase phản hồi quá lâu. Hãy tải lại trang và thử lại.')),15000))]);
-    login.hidden=true;app.hidden=false;error.textContent='';
+    await Promise.race([load(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Supabase phản hồi quá lâu.')),15000))]);
+    banner.textContent='';banner.classList.remove('show');
   }catch(e){
     const msg=String(e?.message||e||'Không thể tải dữ liệu quản trị.');
-    error.textContent=msg.includes('Could not find the table')||msg.includes('relation')?'Supabase chưa có đủ bảng CMS. Hãy chạy db/supabase-upgrade.sql trong SQL Editor.':msg;
-    login.hidden=false;app.hidden=true;
-    throw e;
+    banner.textContent=msg.includes('Could not find the table')||msg.includes('relation')?'Thiếu bảng CMS trong Supabase. Hãy chạy db/supabase-upgrade.sql.':`Đăng nhập thành công nhưng chưa tải được dữ liệu: ${msg}`;
+    banner.classList.add('show');
+    console.error('Admin data load failed:',e);
   }
 }
+
 window.htShowApp=showApp;window.htLoad=load;
 function renderDashboard(){const el=$('#dashboard');el.innerHTML=`<div class="stats"><div class="stat"><span>Lượt truy cập hôm nay</span><strong id="analytics-today">—</strong></div><div class="stat"><span>Khách duy nhất · 7 ngày</span><strong id="analytics-unique">—</strong></div><div class="stat"><span>Lượt xem bài viết · 7 ngày</span><strong id="analytics-article-views">—</strong></div><div class="stat"><span>Khách hàng mới</span><strong>${db.leads.filter(x=>!x.status||x.status==='Mới').length}</strong></div></div><div class="analytics-toolbar"><div><h2>Thống kê truy cập</h2><p class="item-meta">Dữ liệu được ghi nhận từ website công khai, không tính trang Admin.</p></div><select id="analytics-range"><option value="7">7 ngày gần nhất</option><option value="30">30 ngày gần nhất</option></select></div><div class="analytics-grid"><div class="panel"><div class="chart-head"><strong>Lượt truy cập theo ngày</strong><span class="item-meta" id="analytics-range-label">Đang tải…</span></div><div id="analytics-chart" class="analytics-chart"><div class="item-meta">Đang tải dữ liệu thống kê…</div></div></div><div class="panel"><div class="chart-head"><strong>Bài viết được xem nhiều</strong><span class="item-meta">Top 5</span></div><div id="analytics-top" class="analytics-top"><div class="item-meta">Đang tải…</div></div></div></div><div class="panel analytics-table-panel"><div class="chart-head"><strong>Chi tiết bài viết</strong><span class="item-meta">Lượt xem · click · CTR</span></div><div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Bài viết</th><th>Lượt xem</th><th>Click</th><th>CTR</th></tr></thead><tbody id="analytics-article-table"><tr><td colspan="4" class="item-meta">Đang tải…</td></tr></tbody></table></div></div>`;$('#analytics-range').onchange=()=>loadAnalytics(Number($('#analytics-range').value));loadAnalytics(7)}
 const analyticsDate=days=>{const end=new Date(),start=new Date(end.getTime()-(days-1)*86400000);const iso=d=>d.toISOString();return{start:iso(start),end:iso(end)}};
