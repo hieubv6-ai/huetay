@@ -2,14 +2,33 @@ const $=s=>document.querySelector(s),supabase=window.htSupabase,db={projects:[],
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])),slug=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''),id=p=>`${p}-${crypto.randomUUID()}`,notice=m=>{const n=$('#notice');n.textContent=m;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),3000)},check=r=>{if(r.error)throw new Error(r.error.message);return r},lines=v=>String(v||'').split('\n').map(x=>x.trim()).filter(Boolean),dateText=v=>v?new Date(v).toLocaleString('vi-VN'):'Chưa cập nhật';
 async function uploadImage(file,folder){if(!file||!file.size)return'';const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,''),path=`${folder}/${crypto.randomUUID()}.${ext}`;check(await supabase.storage.from('media').upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'}));return supabase.storage.from('media').getPublicUrl(path).data.publicUrl}
 function imageField(name,value,label='ẢNH HIỂN THỊ'){return`<div class="field full"><label>${label}<input name="${name}" value="${esc(value)}" placeholder="URL ảnh hoặc tên file hiện có"><input type="file" accept="image/jpeg,image/png,image/webp" data-upload-for="${name}"><small class="item-meta">Chọn ảnh để tải lên Supabase Storage bucket <b>media</b>; có thể dùng lại URL ảnh cũ.</small>${value?`<img class="admin-image-preview" src="${esc(value)}" alt="Ảnh xem trước">`:''}</label></div>`}function bindUploads(root){root.querySelectorAll('[data-upload-for]').forEach(input=>input.addEventListener('change',()=>{const field=root.querySelector(`[name="${input.dataset.uploadFor}"]`);if(field&&input.files[0])field.dataset.pendingFile='1'}))}
-async function load(){const [p,a,u,l,profile,menu,crm]=await Promise.all([supabase.from('projects').select('*').order('created_at',{ascending:false}),supabase.from('articles').select('*').order('published_at',{ascending:false}),supabase.from('units').select('*').order('created_at',{ascending:false}),supabase.from('leads').select('*').order('created_at',{ascending:false}),supabase.from('site_settings').select('value').eq('key','profile').maybeSingle(),supabase.from('site_settings').select('value').eq('key','menu').maybeSingle(),supabase.from('site_settings').select('value').eq('key','crm_meta').maybeSingle()]);[p,a,u,l,profile,menu,crm].forEach(check);db.projects=p.data||[];db.articles=a.data||[];db.units=u.data||[];db.leads=l.data||[];db.profile=profile.data?.value||{};db.menu=Array.isArray(menu.data?.value)&&menu.data.value.length?menu.data.value:MENU_FEATURES.slice(0,5);db.crm=crm.data?.value||{};renderDashboard();renderProjects();renderArticles();renderUnits();renderLeads();renderProfileSettings();renderMenu()}
+async function load(){
+  const names=['projects','articles','units','leads','profile','menu','crm_meta'];
+  const queries=[
+    supabase.from('projects').select('*').order('created_at',{ascending:false}),
+    supabase.from('articles').select('*').order('published_at',{ascending:false}),
+    supabase.from('units').select('*').order('created_at',{ascending:false}),
+    supabase.from('leads').select('*').order('created_at',{ascending:false}),
+    supabase.from('site_settings').select('value').eq('key','profile').maybeSingle(),
+    supabase.from('site_settings').select('value').eq('key','menu').maybeSingle(),
+    supabase.from('site_settings').select('value').eq('key','crm_meta').maybeSingle()
+  ];
+  const results=await Promise.allSettled(queries.map(q=>Promise.race([q,new Promise((_,reject)=>setTimeout(()=>reject(new Error('quá thời gian')),10000))])));
+  const errors=[];
+  const data=results.map((r,i)=>{if(r.status==='rejected'||r.value?.error){errors.push(`${names[i]}: ${r.reason?.message||r.value?.error?.message||'không tải được'}`);return null}return r.value.data});
+  db.projects=data[0]||[];db.articles=data[1]||[];db.units=data[2]||[];db.leads=data[3]||[];db.profile=data[4]?.value||{};db.menu=Array.isArray(data[5]?.value)&&data[5].value.length?data[5].value:MENU_FEATURES.slice(0,5);db.crm=data[6]?.value||{};
+  renderDashboard();renderProjects();renderArticles();renderUnits();renderLeads();renderProfileSettings();renderMenu();
+  window.htLoadErrors=errors;
+  if(errors.length)console.warn('CMS load warnings:',errors);
+}
+
 async function saveSetting(key,value){check(await supabase.from('site_settings').upsert({key,value,updated_at:new Date().toISOString()}))}async function showApp(){
   const login=$('#login'),app=$('#app'),error=$('#login-error'),banner=$('#notice');
   login.hidden=true;app.hidden=false;error.textContent='';
   banner.textContent='Đang tải dữ liệu quản trị…';banner.classList.add('show');
   try{
     await Promise.race([load(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Supabase phản hồi quá lâu.')),15000))]);
-    banner.textContent='';banner.classList.remove('show');
+    if(window.htLoadErrors?.length){banner.textContent='Đã đăng nhập. Một số dữ liệu chưa tải được: '+window.htLoadErrors.join(' · ');banner.classList.add('show')}else{banner.textContent='';banner.classList.remove('show');}
   }catch(e){
     const msg=String(e?.message||e||'Không thể tải dữ liệu quản trị.');
     banner.textContent=msg.includes('Could not find the table')||msg.includes('relation')?'Thiếu bảng CMS trong Supabase. Hãy chạy db/supabase-upgrade.sql.':`Đăng nhập thành công nhưng chưa tải được dữ liệu: ${msg}`;
