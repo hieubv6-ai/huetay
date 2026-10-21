@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /reset-password.html
+Sitemap: https://huetayvinhomes.com/sitemap.xml
