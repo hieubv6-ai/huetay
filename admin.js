@@ -2,6 +2,12 @@ const $=s=>document.querySelector(s),supabase=window.htSupabase,db={projects:[],
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])),slug=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''),id=p=>`${p}-${crypto.randomUUID()}`,notice=m=>{const n=$('#notice');n.textContent=m;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),3000)},check=r=>{if(r.error)throw new Error(r.error.message);return r},lines=v=>String(v||'').split('\n').map(x=>x.trim()).filter(Boolean),dateText=v=>v?new Date(v).toLocaleString('vi-VN'):'Chưa cập nhật';
 async function uploadImage(file,folder){if(!file||!file.size)return'';const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,''),path=`${folder}/${crypto.randomUUID()}.${ext}`;check(await supabase.storage.from('media').upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'}));return supabase.storage.from('media').getPublicUrl(path).data.publicUrl}
 function imageField(name,value,label='ẢNH HIỂN THỊ'){return`<div class="field full"><label>${label}<input name="${name}" value="${esc(value)}" placeholder="URL ảnh hoặc tên file hiện có"><input type="file" accept="image/jpeg,image/png,image/webp" data-upload-for="${name}"><small class="item-meta">Chọn ảnh để tải lên Supabase Storage bucket <b>media</b>; có thể dùng lại URL ảnh cũ.</small>${value?`<img class="admin-image-preview" src="${esc(value)}" alt="Ảnh xem trước">`:''}</label></div>`}function bindUploads(root){root.querySelectorAll('[data-upload-for]').forEach(input=>input.addEventListener('change',()=>{const field=root.querySelector(`[name="${input.dataset.uploadFor}"]`);if(field&&input.files[0])field.dataset.pendingFile='1'}))}
+async function publicRows(table,select='*',order=''){
+  const url=`${window.HT_SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}&limit=500${order?`&order=${encodeURIComponent(order)}`:''}`;
+  const r=await fetch(url,{headers:{apikey:window.HT_SUPABASE_ANON_KEY,Authorization:`Bearer ${window.HT_SUPABASE_ANON_KEY}`} });
+  if(!r.ok)throw new Error(`${table}: HTTP ${r.status}`);
+  return r.json();
+}
 async function load(){
   const names=['projects','articles','units','leads','profile','menu','crm_meta'];
   const queries=[
@@ -16,6 +22,9 @@ async function load(){
   const results=await Promise.allSettled(queries.map(q=>Promise.race([q,new Promise((_,reject)=>setTimeout(()=>reject(new Error('quá thời gian')),10000))])));
   const errors=[];
   const data=results.map((r,i)=>{if(r.status==='rejected'||r.value?.error){errors.push(`${names[i]}: ${r.reason?.message||r.value?.error?.message||'không tải được'}`);return null}return r.value.data});
+  if(!data[0])try{data[0]=await publicRows('projects','*','created_at.desc')}catch(e){errors.push(e.message)}
+  if(!data[1])try{data[1]=await publicRows('articles','*','published_at.desc')}catch(e){errors.push(e.message)}
+  if(!data[2])try{data[2]=await publicRows('units','*','created_at.desc')}catch(e){errors.push(e.message)}
   db.projects=data[0]||[];db.articles=data[1]||[];db.units=data[2]||[];db.leads=data[3]||[];db.profile=data[4]?.value||{};db.menu=Array.isArray(data[5]?.value)&&data[5].value.length?data[5].value:MENU_FEATURES.slice(0,5);db.crm=data[6]?.value||{};
   renderDashboard();renderProjects();renderArticles();renderUnits();renderLeads();renderProfileSettings();renderMenu();
   window.htLoadErrors=errors;

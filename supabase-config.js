@@ -7,7 +7,8 @@ window.htSupabase = window.supabase.createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storageKey: 'huetay-admin-auth-v2'
     }
   }
 );
