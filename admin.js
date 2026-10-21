@@ -36,17 +36,11 @@ async function saveSetting(key,value){check(await supabase.from('site_settings')
   login.hidden=true;app.hidden=false;error.textContent='';
   banner.textContent='Đang tải dữ liệu quản trị…';banner.classList.add('show');
   try{
-    const current=await supabase.auth.getSession();
-    if(current.error)throw current.error;
-    if(!current.data.session)throw new Error('Phiên đăng nhập không còn hợp lệ. Hãy đăng nhập lại.');
-    const refreshed=await supabase.auth.refreshSession();
-    if(refreshed.error)console.warn('Session refresh warning:',refreshed.error.message);
     await Promise.race([load(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Supabase phản hồi quá lâu.')),15000))]);
-    if(window.htLoadErrors?.length){banner.textContent='Đã đăng nhập nhưng có lỗi tải dữ liệu: '+window.htLoadErrors.join(' · ');banner.classList.add('show')}else{banner.textContent=`Đã tải: ${db.projects.length} dự án · ${db.articles.length} bài viết · ${db.units.length} căn`;banner.classList.add('show');setTimeout(()=>banner.classList.remove('show'),5000);}
+    if(window.htLoadErrors?.length){banner.textContent='Đã đăng nhập nhưng có lỗi tải dữ liệu: '+window.htLoadErrors.join(' · ');}
+    else{banner.textContent=`Đã tải: ${db.projects.length} dự án · ${db.articles.length} bài viết · ${db.units.length} căn`;setTimeout(()=>banner.classList.remove('show'),5000);}
   }catch(e){
-    const msg=String(e?.message||e||'Không thể tải dữ liệu quản trị.');
-    banner.textContent=msg.includes('Could not find the table')||msg.includes('relation')?'Thiếu bảng CMS trong Supabase. Hãy chạy db/supabase-upgrade.sql.':`Đăng nhập thành công nhưng chưa tải được dữ liệu: ${msg}`;
-    banner.classList.add('show');
+    banner.textContent='Đã đăng nhập nhưng chưa tải được dữ liệu: '+String(e?.message||e||'Lỗi không xác định');
     console.error('Admin data load failed:',e);
   }
 }
